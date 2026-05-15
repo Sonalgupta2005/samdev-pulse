@@ -48,6 +48,27 @@
     }
   }
 
+  /* Updates only the markdown snippet in real-time without reloading the preview image */
+  function updateSnippetOnly() {
+    const username = usernameInput.value.trim() || 'SamXop123';
+    const leetcode = leetcodeInput.value.trim();
+    const theme = themeSelect.value;
+    const align = alignSelect.value;
+    const hideTrophies = hideTrophiesCheck ? hideTrophiesCheck.checked : false;
+
+    const params = new URLSearchParams({ username });
+    if (theme) params.append('theme', theme);
+    if (leetcode) params.append('leetcode', leetcode);
+    if (align && align !== 'left') params.append('align', align);
+    if (hideTrophies) params.append('hide_trophies', 'true');
+
+    const publicUrl = `${deployUrl}/api/profile?${params.toString()}`;
+
+    if (snippet) {
+      snippet.textContent = `![samdev-pulse](${publicUrl})`;
+    }
+  }
+
   /* Handles the update preview button click */
   function handleUpdateClick() {
     if (!updateBtn) return;
@@ -112,6 +133,30 @@
     });
   }
 
+  /* Sets up real-time listeners so the markdown snippet stays
+     in sync with all input changes instantly, without requiring
+     the user to click "Update Preview" */
+  function setupRealTimeSync() {
+    // Typing in username or leetcode fields updates snippet instantly
+    if (usernameInput) {
+      usernameInput.addEventListener('input', updateSnippetOnly);
+    }
+    if (leetcodeInput) {
+      leetcodeInput.addEventListener('input', updateSnippetOnly);
+    }
+
+    // Changing theme, alignment, or hide-trophies updates snippet instantly
+    if (themeSelect) {
+      themeSelect.addEventListener('change', updateSnippetOnly);
+    }
+    if (alignSelect) {
+      alignSelect.addEventListener('change', updateSnippetOnly);
+    }
+    if (hideTrophiesCheck) {
+      hideTrophiesCheck.addEventListener('change', updateSnippetOnly);
+    }
+  }
+
   /* this function initialize all event listeners */
   function init() {
     if (updateBtn) {
@@ -123,6 +168,9 @@
     }
 
     setupSmoothScrolling();
+
+    // Set up real-time snippet sync on every input change
+    setupRealTimeSync();
 
     updatePreview();
   }
